@@ -1,0 +1,73 @@
+create database SalesDB;
+use SalesDB;
+
+create table customers(
+	customerID int not null primary key,
+    firstName varchar(50),
+    lastName varchar(50),
+    email varchar(100)
+);
+
+create table promotions(
+	promotionID int not null primary key,
+    promotionName varchar(100) not null,
+    discountPercentage decimal(10,2) not null
+);
+
+create table products(
+	productId int not null primary key,
+    productName varchar(100) not null,
+    price decimal(10,2) not null,
+    promotionID int not null,
+    foreign key (promotionID) references promotions (promotionID)
+);
+
+create table orders (
+	orderID int not null primary key,
+    customerID int not null,
+    orderDate datetime,
+    totalAmount decimal(10,2),
+    foreign key (customerID) references customers(customerID)
+);
+
+create table orderDetails (
+	orderDetailID int not null primary key,
+    orderID int not null,
+    productID int not null,
+    quantity int not null,
+    unitPrice decimal(10,2),
+    foreign key (orderID) references orders (orderID),
+    foreign key (productID) references products (productID)
+);
+
+CREATE TABLE sales (
+    saleID INT PRIMARY KEY NOT NULL,
+    orderID INT NOT NULL,
+    saleDate DATETIME,
+    saleAmount DECIMAL(10 , 2 ),
+    FOREIGN KEY (orderID) REFERENCES orders (orderID)
+);
+
+DELIMITER $$
+
+CREATE PROCEDURE GetCustomerTotalRevenue(
+    IN inCustomerID INT,
+    IN inStartDate DATE,
+    IN inEndDate DATE,
+    OUT outTotalRevenue DECIMAL(10,2)
+)
+BEGIN
+    SELECT IFNULL(SUM(totalAmount), 0)
+    INTO outTotalRevenue
+    FROM orders	
+    WHERE customerID = inCustomerID
+      AND orderDate BETWEEN inStartDate AND inEndDate;
+END $$
+
+DELIMITER ;
+
+SET @total = 0;
+CALL GetCustomerTotalRevenue(1, '2025-01-01', '2025-12-31', @total);
+SELECT @total;
+
+SHOW PROCEDURE STATUS WHERE Db = 'SalesDB';
