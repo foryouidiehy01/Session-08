@@ -1,0 +1,67 @@
+create database SalesDB;
+use SalesDB;
+
+create table customers(
+	customerID int not null primary key auto_increment,
+    firstName varchar(50),
+    lastName varchar(50),
+    email varchar(100)
+);
+
+create table promotions(
+	promotionID int not null primary key,
+    promotionName varchar(100) not null,
+    discountPercentage decimal(10,2) not null
+);
+
+create table products(
+	productId int not null primary key,
+    productName varchar(100) not null,
+    price decimal(10,2) not null,
+    promotionID int not null,
+    foreign key (promotionID) references promotions (promotionID)
+);
+
+create table orders (
+	orderID int not null primary key,
+    customerID int not null,
+    orderDate datetime,
+    totalAmount decimal(10,2),
+    foreign key (customerID) references customers(customerID)
+);
+
+create table orderDetails (
+	orderDetailID int not null primary key,
+    orderID int not null,
+    productID int not null,
+    quantity int not null,
+    unitPrice decimal(10,2),
+    foreign key (orderID) references orders (orderID),
+    foreign key (productID) references products (productID)
+);
+
+CREATE TABLE sales (
+    saleID INT PRIMARY KEY NOT NULL,
+    orderID INT NOT NULL,
+    saleDate DATETIME,
+    saleAmount DECIMAL(10 , 2 ),
+    FOREIGN KEY (orderID) REFERENCES orders (orderID)
+);
+
+DELIMITER $$
+create procedure AddNewCustomer (
+	inFirstName varchar(50),
+	inLastName varchar(50),
+    inEmail varchar(50)
+)
+begin
+	insert into customers (firstName,lastName,email)
+    values (inFirstName,inLastName,inEmail);
+end $$
+DELIMITER ;
+
+call AddNewCustomer('Nguyen','VanA','nguyenvana@gmail.com');
+
+select * from customers;
+
+
